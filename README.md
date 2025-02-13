@@ -15,12 +15,11 @@ The figure below shows the DIRECT method after 16 iterations on the Branin funct
 
 ## Installation
 
-To install the package, start Julia and run the following command:
+Use `]` to get to the package manager to add the package.
 
 ```julia
-using Pkg
-Pkg.add(url="https://github.com/sisl/DividedRectangles.jl")
-
+julia> ]
+pkg> add DividedRectangles
 ```
 ## Usage  
  
