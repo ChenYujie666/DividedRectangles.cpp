@@ -10,6 +10,12 @@ using namespace std;
 
 const double DEFAULT_CCW_TOL = 1e-6;
 
+float clamp(float a, float l, float u){
+    if(a < l) return l;
+    if(a > u) return u;
+    return a;
+}
+
 struct DirectRectangle {
     vector<double> c;
     double y;
@@ -141,15 +147,15 @@ vector<DirectRectangle> split_interval(const DirectRectangle& rect, const functi
 }
 
 vector<DirectRectangle> direct(const function<double(const vector<double>&)>& f,
-                               const vector<double>& a,
-                               const vector<double>& b,
+                               const vector<double>& l,
+                               const vector<double>& u,
                                int max_iterations = 100,
                                double min_radius = 1e-5) {
-    int n = a.size();
+    int n = l.size();
     auto g = [&](const vector<double>& x) {
         vector<double> scaled(n);
         for (int i = 0; i < n; ++i) {
-            scaled[i] = x[i] * (b[i] - a[i]) + a[i];
+            scaled[i] = x[i] * (u[i] - l[i]) + l[i];
         }
         return f(scaled);
     };
@@ -203,4 +209,9 @@ vector<double> optimize(const function<double(const vector<double>&)>& f,
     }
 
     return result;
+}
+
+int main(){
+    cout << "Optimizing a simple function..." << endl;
+    return 0;
 }
