@@ -6,8 +6,6 @@
 #include <iterator>
 #include <iostream>
 
-using namespace std;
-
 const double DEFAULT_CCW_TOL = 1e-6;
 
 double clamp(double a, double l, double u)
@@ -21,13 +19,13 @@ double clamp(double a, double l, double u)
 
 struct DirectRectangle
 {
-    vector<double> c;
+    std::vector<double> c;
     double y;
-    vector<int> d;
+    std::vector<int> d;
     double r;
 
-    DirectRectangle(vector<double> c, double y, vector<int> d, double r)
-        : c(move(c)), y(y), d(move(d)), r(r) {}
+    DirectRectangle(std::vector<double> c, double y, std::vector<int> d, double r)
+        : c(std::move(c)), y(y), d(std::move(d)), r(r) {}
 };
 
 bool are_equal(const DirectRectangle &a, const DirectRectangle &b, double tol = 1e-9)
@@ -36,14 +34,14 @@ bool are_equal(const DirectRectangle &a, const DirectRectangle &b, double tol = 
         return false;
     for (size_t i = 0; i < a.c.size(); ++i)
     {
-        if (abs(a.c[i] - b.c[i]) > tol)
+        if (std::abs(a.c[i] - b.c[i]) > tol)
             return false;
     }
-    if (abs(a.y - b.y) > tol)
+    if (std::abs(a.y - b.y) > tol)
         return false;
     if (a.d != b.d)
         return false;
-    if (abs(a.r - b.r) > tol)
+    if (std::abs(a.r - b.r) > tol)
         return false;
     return true;
 }
@@ -54,33 +52,33 @@ bool is_ccw(const DirectRectangle &a, const DirectRectangle &b, const DirectRect
     return val < tol;
 }
 
-vector<double> basis(int i, int n)
+std::vector<double> basis(int i, int n)
 {
-    vector<double> e(n, 0.0);
+    std::vector<double> e(n, 0.0);
     e[i] = 1.0;
     return e;
 }
 
-double compute_radius(const vector<int> &d)
+double compute_radius(const std::vector<int> &d)
 {
     double sum = 0.0;
     for (int di : d)
     {
-        double term = 0.5 * pow(3.0, -di);
+        double term = 0.5 * std::pow(3.0, -di);
         sum += term * term;
     }
-    return sqrt(sum);
+    return std::sqrt(sum);
 }
 
-vector<DirectRectangle> get_split_intervals(vector<DirectRectangle> &rects, double r_min)
+std::vector<DirectRectangle> get_split_intervals(std::vector<DirectRectangle> &rects, double r_min)
 {
-    sort(rects.begin(), rects.end(), [](const DirectRectangle &a, const DirectRectangle &b)
+    std::sort(rects.begin(), rects.end(), [](const DirectRectangle &a, const DirectRectangle &b)
          { return (a.r != b.r) ? (a.r < b.r) : (a.y < b.y); });
 
-    vector<DirectRectangle> hull;
+    std::vector<DirectRectangle> hull;
     for (const auto &rect : rects)
     {
-        if (!hull.empty() && abs(rect.r - hull.back().r) < 1e-9)
+        if (!hull.empty() && std::abs(rect.r - hull.back().r) < 1e-9)
         {
             continue;
         }
@@ -107,58 +105,58 @@ vector<DirectRectangle> get_split_intervals(vector<DirectRectangle> &rects, doub
         hull.push_back(rect);
     }
 
-    auto it = remove_if(hull.begin(), hull.end(), [r_min](const DirectRectangle &rect)
+    auto it = std::remove_if(hull.begin(), hull.end(), [r_min](const DirectRectangle &rect)
                         { return rect.r < r_min - 1e-9; });
     hull.erase(it, hull.end());
 
     return hull;
 }
 
-vector<DirectRectangle> split_interval(const DirectRectangle &rect, const function<double(const vector<double> &)> &g)
+std::vector<DirectRectangle> split_interval(const DirectRectangle &rect, const std::function<double(const std::vector<double> &)> &g)
 {
-    vector<double> c = rect.c;
+    std::vector<double> c = rect.c;
     int n = c.size();
-    vector<int> d = rect.d;
-    int d_min = *min_element(d.begin(), d.end());
+    std::vector<int> d = rect.d;
+    int d_min = *std::min_element(d.begin(), d.end());
 
-    vector<int> dirs;
+    std::vector<int> dirs;
     for (int i = 0; i < d.size(); ++i)
     {
         if (d[i] == d_min)
             dirs.push_back(i);
     }
 
-    double delta = pow(3.0, -d_min - 1);
-    vector<pair<vector<double>, vector<double>>> Cs;
-    vector<pair<double, double>> Ys;
+    double delta = std::pow(3.0, -d_min - 1);
+    std::vector<std::pair<std::vector<double>, std::vector<double>>> Cs;
+    std::vector<std::pair<double, double>> Ys;
 
     for (int i : dirs)
     {
-        vector<double> e = basis(i, n);
-        vector<double> c_plus = c;
-        vector<double> c_minus = c;
+        std::vector<double> e = basis(i, n);
+        std::vector<double> c_plus = c;
+        std::vector<double> c_minus = c;
         for (int k = 0; k < n; ++k)
         {
             c_plus[k] = clamp(c_plus[k] + delta * e[k], 0.0, 1.0);
             c_minus[k] = clamp(c_minus[k] - delta * e[k], 0.0, 1.0);
         }
         Ys.emplace_back(g(c_plus), g(c_minus));
-        Cs.emplace_back(move(c_plus), move(c_minus));
+        Cs.emplace_back(std::move(c_plus), std::move(c_minus));
     }
 
-    vector<double> minvals;
+    std::vector<double> minvals;
     for (const auto &y : Ys)
     {
-        minvals.push_back(min(y.first, y.second));
+        minvals.push_back(std::min(y.first, y.second));
     }
 
-    vector<size_t> indices(dirs.size());
-    iota(indices.begin(), indices.end(), 0);
-    sort(indices.begin(), indices.end(), [&minvals](size_t a, size_t b)
+    std::vector<size_t> indices(dirs.size());
+    std::iota(indices.begin(), indices.end(), 0);
+    std::sort(indices.begin(), indices.end(), [&minvals](size_t a, size_t b)
          { return minvals[a] < minvals[b]; });
 
-    vector<DirectRectangle> new_rects;
-    vector<int> current_d = d;
+    std::vector<DirectRectangle> new_rects;
+    std::vector<int> current_d = d;
 
     for (size_t idx : indices)
     {
@@ -173,16 +171,16 @@ vector<DirectRectangle> split_interval(const DirectRectangle &rect, const functi
     return new_rects;
 }
 
-vector<DirectRectangle> direct(const function<double(const vector<double> &)> &f,
-                               const vector<double> &lower_bound,
-                               const vector<double> &upper_bound,
+std::vector<DirectRectangle> direct(const std::function<double(const std::vector<double> &)> &f,
+                               const std::vector<double> &lower_bound,
+                               const std::vector<double> &upper_bound,
                                int max_iterations = 100,
                                double min_radius = 1e-5)
 {
     int n = lower_bound.size();
-    auto g = [&](const vector<double> &x)
+    auto g = [&](const std::vector<double> &x)
     {
-        vector<double> scaled(n);
+        std::vector<double> scaled(n);
         for (int i = 0; i < n; ++i)
         {
             scaled[i] = x[i] * (upper_bound[i] - lower_bound[i]) + lower_bound[i];
@@ -190,15 +188,15 @@ vector<DirectRectangle> direct(const function<double(const vector<double> &)> &f
         return f(scaled);
     };
 
-    vector<double> center(n, 0.5);
-    vector<DirectRectangle> rects;
-    rects.emplace_back(center, g(center), vector<int>(n, 0), compute_radius(vector<int>(n, 0)));
+    std::vector<double> center(n, 0.5);
+    std::vector<DirectRectangle> rects;
+    rects.emplace_back(center, g(center), std::vector<int>(n, 0), compute_radius(std::vector<int>(n, 0)));
 
     for (int k = 0; k < max_iterations; ++k)
     {
         auto candidates = get_split_intervals(rects, min_radius);
 
-        vector<DirectRectangle> new_rects;
+        std::vector<DirectRectangle> new_rects;
         for (const auto &rect : rects)
         {
             bool found = false;
@@ -220,29 +218,29 @@ vector<DirectRectangle> direct(const function<double(const vector<double> &)> &f
             new_rects.insert(new_rects.end(), split.begin(), split.end());
         }
 
-        rects = move(new_rects);
+        rects = std::move(new_rects);
     }
 
     return rects;
 }
 
-vector<double> optimize(const function<double(const vector<double> &)> &f,
-                        const vector<double> &lower_bound,
-                        const vector<double> &upper_bound,
+std::vector<double> optimize(const std::function<double(const std::vector<double> &)> &f,
+                        const std::vector<double> &lower_bound,
+                        const std::vector<double> &upper_bound,
                         int max_iterations = 100,
                         double min_radius = 1e-5)
 {
     auto rects = direct(f, lower_bound, upper_bound, max_iterations, min_radius);
     if (rects.empty())
-        return vector<double>(lower_bound.size(), 0.5);
+        return std::vector<double>(lower_bound.size(), 0.5);
 
-    auto best = min_element(rects.begin(), rects.end(),
+    auto best = std::min_element(rects.begin(), rects.end(),
                             [](const DirectRectangle &a, const DirectRectangle &b)
                             {
                                 return a.y < b.y;
                             });
 
-    vector<double> result;
+    std::vector<double> result;
     for (size_t i = 0; i < best->c.size(); ++i)
     {
         result.push_back(best->c[i] * (upper_bound[i] - lower_bound[i]) + lower_bound[i]);
@@ -250,25 +248,25 @@ vector<double> optimize(const function<double(const vector<double> &)> &f,
 
     return result;
 }
-double my_function(const vector<double> &x)
+double my_function(const std::vector<double> &x)
 {
-    return sin(x[0]) + sin(2 * x[0]) + sin(4 * x[0]) + sin(8 * x[0]) + x[1];
+    return std::sin(x[0]) + std::sin(2 * x[0]) + std::sin(4 * x[0]) + std::sin(8 * x[0]) + x[1];
 }
 
 int main()
 {
 
-    vector<double> lower_bound = {-2, -2};
-    vector<double> upper_bound = {2, 2};
+    std::vector<double> lower_bound = {-2, -2};
+    std::vector<double> upper_bound = {2, 2};
     auto result = optimize(my_function, lower_bound, upper_bound, 100, 1e-5);
 
-    cout << "Optimizing a simple function..." << endl;
+    std::cout << "Optimizing a simple function..." << std::endl;
     for (auto r : result)
     {
-        cout << r << " ";
+        std::cout << r << " ";
     }
-    cout << endl;
+    std::cout << std::endl;
 
-    cout << "Result: " << my_function(result) << endl;
+    std::cout << "Result: " << my_function(result) << std::endl;
     return 0;
 }
