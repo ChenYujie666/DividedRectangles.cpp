@@ -1,193 +1,206 @@
-module DividedRectangles
+#include <vector>
+#include <cmath>
+#include <algorithm>
+#include <functional>
+#include <numeric>
+#include <iterator>
+#include <iostream>
 
-using LinearAlgebra
+using namespace std;
 
-export optimize, direct
+const double DEFAULT_CCW_TOL = 1e-6;
 
-# A default tolerance value for the is_ccw function.
-const DEFAULT_CCW_TOL = 1e-6
+struct DirectRectangle {
+    vector<double> c;
+    double y;
+    vector<int> d;
+    double r;
 
-"""
-    DirectRectangle
+    DirectRectangle(vector<double> c, double y, vector<int> d, double r)
+        : c(move(c)), y(y), d(move(d)), r(r) {}
+};
 
-A data structure representing a hyperrectangular interval in the normalized unit hypercube [0, 1]^n,
-used by the DIRECT (DIvided RECTangles) global optimization algorithm.
+bool are_equal(const DirectRectangle& a, const DirectRectangle& b, double tol = 1e-9) {
+    if (a.c.size() != b.c.size()) return false;
+    for (size_t i = 0; i < a.c.size(); ++i) {
+        if (abs(a.c[i] - b.c[i]) > tol) return false;
+    }
+    if (abs(a.y - b.y) > tol) return false;
+    if (a.d != b.d) return false;
+    if (abs(a.r - b.r) > tol) return false;
+    return true;
+}
 
-# Fields
-- `c::Vector{Float64}`: The center point of the interval, given as a vector in [0, 1]^n.
-- `y::Float64`: The value of the objective function evaluated at the center `c`.
-- `d::Vector{Int}`: The count of divisions along each dimension.
-- `r::Float64`: The "radius" of the hyperrectangle, computed as `r = norm(0.5 * 3.0.^(-d))`.
-"""
-struct DirectRectangle
-    c::Vector{Float64}
-    y::Float64
-    d::Vector{Int}
-    r::Float64
-end
+bool is_ccw(const DirectRectangle& a, const DirectRectangle& b, const DirectRectangle& c, double tol = DEFAULT_CCW_TOL) {
+    double val = a.r * (b.y - c.y) - a.y * (b.r - c.r) + (b.r * c.y - b.y * c.r);
+    return val < tol;
+}
 
-"""
-    is_ccw(a, b, c; tol=DEFAULT_CCW_TOL)
+vector<double> basis(int i, int n) {
+    vector<double> e(n, 0.0);
+    e[i] = 1.0;
+    return e;
+}
 
-Determines whether the sequence of hyperrectangles `a → b → c` forms a counter-clockwise turn in the `(r, y)` space.
+double compute_radius(const vector<int>& d) {
+    double sum = 0.0;
+    for (int di : d) {
+        double term = 0.5 * pow(3.0, -di);
+        sum += term * term;
+    }
+    return sqrt(sum);
+}
 
-# Arguments
-- `a::DirectRectangle, b::DirectRectangle, c::DirectRectangle`: Hyperrectangles whose `(r, y)` values are compared.
-- `tol::Float64`: (Optional) Tolerance for the counter-clockwise test (default: `DEFAULT_CCW_TOL`).
+vector<DirectRectangle> get_split_intervals(vector<DirectRectangle>& rects, double r_min) {
+    sort(rects.begin(), rects.end(), [](const DirectRectangle& a, const DirectRectangle& b) {
+        return (a.r != b.r) ? (a.r < b.r) : (a.y < b.y);
+    });
 
-# Returns
-- `true` if the computed expression is less than `tol`, indicating a counter-clockwise configuration;
-  otherwise, returns `false`.
-"""
-function is_ccw(a::DirectRectangle, b::DirectRectangle, c::DirectRectangle; tol::Float64=DEFAULT_CCW_TOL)
-    return a.r * (b.y - c.y) - a.y * (b.r - c.r) + (b.r * c.y - b.y * c.r) < tol
-end
+    vector<DirectRectangle> hull;
+    for (const auto& rect : rects) {
+        if (!hull.empty() && abs(rect.r - hull.back().r) < 1e-9) {
+            continue;
+        }
 
-"""
-    basis(i, n)
+        while (!hull.empty() && rect.y <= hull.back().y) {
+            hull.pop_back();
+        }
 
-Returns the `i`th standard basis vector of length `n`.
-"""
-basis(i, n) = [k == i ? 1.0 : 0.0 for k in 1:n]
+        while (hull.size() >= 2) {
+            const DirectRectangle& a = hull.end()[-2];
+            const DirectRectangle& b = hull.end()[-1];
+            if (is_ccw(a, b, rect)) {
+                hull.pop_back();
+            } else {
+                break;
+            }
+        }
 
-"""
-    get_split_intervals(□s, r_min)
+        hull.push_back(rect);
+    }
 
-Selects hyperrectangles from the list `□s` that are candidates for splitting.
-This routine uses a convex-hull criterion in the `(r, y)` space to identify potentially optimal
-intervals, then filters out any with a radius smaller than `r_min`.
+    auto it = remove_if(hull.begin(), hull.end(), [r_min](const DirectRectangle& rect) {
+        return rect.r < r_min - 1e-9;
+    });
+    hull.erase(it, hull.end());
 
-# Arguments
-- `□s::Vector{DirectRectangle}`: The current list of hyperrectangular intervals.
-- `r_min::Float64`: The minimum allowable radius for an interval to be considered for splitting.
+    return hull;
+}
 
-# Returns
-- A vector of `DirectRectangle` instances that are eligible for further subdivision.
-"""
-function get_split_intervals(□s::Vector{DirectRectangle}, r_min::Float64)
-    hull = DirectRectangle[]
-    # Sort the rects by increasing r, then by increasing y
-    sort!(□s, by=□ -> (□.r, □.y))
-    for □ in □s
-        if length(hull) ≥ 1 && □.r == hull[end].r
-            # Repeated r values cannot be improvements
-            continue
-        end
-        if length(hull) ≥ 1 && □.y ≤ hull[end].y
-            # Remove the last point if the new one is better
-            pop!(hull)
-        end
-        if length(hull) ≥ 2 && is_ccw(hull[end-1], hull[end], □)
-            # Remove the last point if the new one is better
-            pop!(hull)
-        end
-        push!(hull, □)
-    end
-    # Only split intervals larger than the minimum radius
-    filter!(□ -> □.r ≥ r_min, hull)
-    return hull
-end
+vector<DirectRectangle> split_interval(const DirectRectangle& rect, const function<double(const vector<double>&)>& g) {
+    vector<double> c = rect.c;
+    int n = c.size();
+    vector<int> d = rect.d;
+    int d_min = *min_element(d.begin(), d.end());
 
-"""
-    split_interval(□, g)
+    vector<int> dirs;
+    for (int i = 0; i < d.size(); ++i) {
+        if (d[i] == d_min) dirs.push_back(i);
+    }
 
-Splits the hyperrectangular interval `□` along the dimensions with the smallest number of subdivisions.
-The objective function `g` is evaluated at new points corresponding to split directions. The resulting
-smaller intervals are returned.
+    double delta = pow(3.0, -d_min - 1);
+    vector<pair<vector<double>, vector<double>>> Cs;
+    vector<pair<double, double>> Ys;
 
-# Arguments
-- `□::DirectRectangle`: The hyperrectangle to be subdivided.
-- `g`: A function mapping a point in the unit hypercube to its objective function value.
+    for (int i : dirs) {
+        vector<double> e = basis(i, n);
+        vector<double> c_plus = c;
+        vector<double> c_minus = c;
+        for (int k = 0; k < n; ++k) {
+            c_plus[k] = clamp(c_plus[k] + delta * e[k], 0.0, 1.0);
+            c_minus[k] = clamp(c_minus[k] - delta * e[k], 0.0, 1.0);
+        }
+        Ys.emplace_back(g(c_plus), g(c_minus));
+        Cs.emplace_back(move(c_plus), move(c_minus));
+    }
 
-# Returns
-- A vector of new `DirectRectangle` instances resulting from the subdivision of `□`.
-"""
-function split_interval(□, g)
-    c, n, d_min, d = □.c, length(□.c), minimum(□.d), copy(□.d)
-    dirs, δ = findall(d .== d_min), 3.0^(-d_min - 1)
-    # Sample the objective function in all split directions,
-    # and track the minimum value in each axis.
-    Cs = [(c + δ * basis(i, n), c - δ * basis(i, n)) for i in dirs]
-    Ys = [(g(C[1]), g(C[2])) for C in Cs]
-    minvals = [min(Y[1], Y[2]) for Y in Ys]
+    vector<double> minvals;
+    for (const auto& y : Ys) {
+        minvals.push_back(min(y.first, y.second));
+    }
 
-    # Split the axes in order by increasing minimum value.
-    □s = DirectRectangle[]
-    for j in sortperm(minvals)
-        d[dirs[j]] += 1 # increment the number of splits
-        C, Y, r = Cs[j], Ys[j], norm(0.5 * 3.0 .^ (-d))
-        push!(□s, DirectRectangle(C[1], Y[1], copy(d), r))
-        push!(□s, DirectRectangle(C[2], Y[2], copy(d), r))
-    end
-    r = norm(0.5 * 3.0 .^ (-d))
-    push!(□s, DirectRectangle(c, □.y, d, r))
-    return □s
-end
+    vector<size_t> indices(dirs.size());
+    iota(indices.begin(), indices.end(), 0);
+    sort(indices.begin(), indices.end(), [&minvals](size_t a, size_t b) {
+        return minvals[a] < minvals[b];
+    });
 
-"""
-    direct(f, a::Vector{Float64}, b::Vector{Float64}; max_iterations::Int = 100, min_radius::Float64 = 1e-5)
+    vector<DirectRectangle> new_rects;
+    vector<int> current_d = d;
 
-Implements the DIRECT (DIvided RECTangles) algorithm to perform global optimization by iteratively subdividing
-the search space. The algorithm operates in the normalized unit hypercube [0, 1]^n, where the mapping from the
-original search space (given by bounds `a` and `b`) to the unit hypercube is performed on-the-fly.
+    for (size_t idx : indices) {
+        int dir = dirs[idx];
+        current_d[dir] += 1;
+        double r = compute_radius(current_d);
+        new_rects.emplace_back(Cs[idx].first, Ys[idx].first, current_d, r);
+        new_rects.emplace_back(Cs[idx].second, Ys[idx].second, current_d, r);
+    }
 
-# Arguments
-- `f`: The objective function to be minimized. It should accept a vector of real numbers and return a scalar.
-- `a::Vector{Float64}`: A vector of lower bounds for each dimension of the original search space.
-- `b::Vector{Float64}`: A vector of upper bounds for each dimension of the original search space.
-- `max_iterations::Int`: The maximum number of iterations to execute (default is 100).
-- `min_radius::Float64`: The minimum allowed hyperrectangle radius for further subdivision (default is 1e-5).
+    new_rects.emplace_back(c, rect.y, current_d, compute_radius(current_d));
+    return new_rects;
+}
 
-# Returns
-- A vector of `DirectRectangle` instances representing the final set of hyperrectangular intervals after the
-  specified number of iterations. Each `DirectRectangle` contains:
-    - `c`: the center point (in the unit hypercube),
-    - `y`: the objective function value at the center,
-    - `d`: the division count per dimension,
-    - `r`: the computed radius of the rectangle.
-"""
-function direct(f, a::Vector{Float64}, b::Vector{Float64};
-    max_iterations::Int=100, min_radius::Float64=1e-5)
+vector<DirectRectangle> direct(const function<double(const vector<double>&)>& f,
+                               const vector<double>& a,
+                               const vector<double>& b,
+                               int max_iterations = 100,
+                               double min_radius = 1e-5) {
+    int n = a.size();
+    auto g = [&](const vector<double>& x) {
+        vector<double> scaled(n);
+        for (int i = 0; i < n; ++i) {
+            scaled[i] = x[i] * (b[i] - a[i]) + a[i];
+        }
+        return f(scaled);
+    };
 
-    g = x -> f(x .* (b - a) + a) # evaluate within unit hypercube
+    vector<double> center(n, 0.5);
+    vector<DirectRectangle> rects;
+    rects.emplace_back(center, g(center), vector<int>(n, 0), compute_radius(vector<int>(n, 0)));
 
-    n = length(a)
-    c = fill(0.5, n)
-    □s = [DirectRectangle(c, g(c), fill(0, n), sqrt(0.5^n))]
+    for (int k = 0; k < max_iterations; ++k) {
+        auto candidates = get_split_intervals(rects, min_radius);
 
-    for k in 1:max_iterations
-        □s_split = get_split_intervals(□s, min_radius)
-        setdiff!(□s, □s_split)
-        for □_split in □s_split
-            append!(□s, split_interval(□_split, g))
-        end
-    end
+        vector<DirectRectangle> new_rects;
+        for (const auto& rect : rects) {
+            bool found = false;
+            for (const auto& c : candidates) {
+                if (are_equal(rect, c)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) new_rects.push_back(rect);
+        }
 
-    return □s
-end
+        for (const auto& c : candidates) {
+            auto split = split_interval(c, g);
+            new_rects.insert(new_rects.end(), split.begin(), split.end());
+        }
 
-"""
-    optimize(f, a::Vector{Float64}, b::Vector{Float64}; max_iterations::Int = 100, min_radius::Float64 = 1e-5)
+        rects = move(new_rects);
+    }
 
-The primary optimization routine of the DividedRectangles module. It uses the DIRECT algorithm to search for
-the global minimum of the objective function `f` over a bounded search space defined by `a` and `b`.
+    return rects;
+}
 
-# Arguments
-- `f`: The objective function to be minimized. Must be defined for inputs in ℝⁿ.
-- `a::Vector{Float64}`: A vector of lower bounds for the search space.
-- `b::Vector{Float64}`: A vector of upper bounds for the search space.
-- `max_iterations::Int`: (Optional) The maximum number of iterations for the DIRECT algorithm (default is 100).
-- `min_radius::Float64`: (Optional) The minimum radius below which hyperrectangles are no longer subdivided (default is 1e-5).
+vector<double> optimize(const function<double(const vector<double>&)>& f,
+                        const vector<double>& a,
+                        const vector<double>& b,
+                        int max_iterations = 100,
+                        double min_radius = 1e-5) {
+    auto rects = direct(f, a, b, max_iterations, min_radius);
+    if (rects.empty()) return vector<double>(a.size(), 0.5);
 
-# Returns
-- A vector of `Float64` representing the best design (i.e., the point in the original search space) found
-  by the DIRECT algorithm.
-"""
-function optimize(f, a::Vector{Float64}, b::Vector{Float64};
-    max_iterations::Int=100, min_radius::Float64=1e-5)
-    □s = direct(f, a, b, max_iterations=max_iterations, min_radius=min_radius)
-    c_best = □s[findmin(□.y for □ in □s)[2]].c
-    return c_best .* (b - a) + a # from unit hypercube
-end
+    auto best = min_element(rects.begin(), rects.end(),
+        [](const DirectRectangle& a, const DirectRectangle& b) {
+            return a.y < b.y;
+        });
 
-end # end module
+    vector<double> result;
+    for (size_t i = 0; i < best->c.size(); ++i) {
+        result.push_back(best->c[i] * (b[i] - a[i]) + a[i]);
+    }
+
+    return result;
+}
