@@ -267,7 +267,8 @@ double test_func3(const std::vector<double> &x)
 double test_func4(const std::vector<double> &x)
 {
     // A simple quadratic function
-    return x[0]*x[0]+x[1]*x[1]+x[2]*x[2]+x[3]*x[3]+4;
+    float x0_bias = 1;
+    return (x[0]+x0_bias)*(x[0]+x0_bias)+(x[1]+x0_bias)*(x[1]+x0_bias)+(x[2]+x0_bias)*(x[2]+x0_bias)+(x[3]+x0_bias)*(x[3]+x0_bias)+4;
 }
 
 double test_func5(const std::vector<double> &x)
