@@ -10,7 +10,7 @@ using namespace std;
 
 const double DEFAULT_CCW_TOL = 1e-6;
 
-float clamp(float a, float l, float u){
+double clamp(double a, double l, double u){
     if(a < l) return l;
     if(a > u) return u;
     return a;
@@ -210,8 +210,18 @@ vector<double> optimize(const function<double(const vector<double>&)>& f,
 
     return result;
 }
+double my_function(const vector<double>& x) {
+    return sin(x[0]) + sin(2*x[0]) + sin(4*x[0]) + sin(8*x[0]);
+}
 
 int main(){
+
+    vector<double> lower_bound = {-2, };
+    vector<double> upper_bound = {2, };
+    auto result = optimize(my_function, lower_bound, upper_bound, 100, 1e-5);
+
+    
     cout << "Optimizing a simple function..." << endl;
+    cout << "Result: " << result[0] << endl;
     return 0;
 }
