@@ -211,17 +211,22 @@ vector<double> optimize(const function<double(const vector<double>&)>& f,
     return result;
 }
 double my_function(const vector<double>& x) {
-    return sin(x[0]) + sin(2*x[0]) + sin(4*x[0]) + sin(8*x[0]);
+    return sin(x[0]) + sin(2*x[0]) + sin(4*x[0]) + sin(8*x[0]) + x[1];
 }
 
 int main(){
 
-    vector<double> lower_bound = {-2, };
-    vector<double> upper_bound = {2, };
+    vector<double> lower_bound = {-2, -2};
+    vector<double> upper_bound = {2, 2};
     auto result = optimize(my_function, lower_bound, upper_bound, 100, 1e-5);
 
 
     cout << "Optimizing a simple function..." << endl;
-    cout << "Result: " << result[0] << endl;
+    for(auto r : result){
+        cout << r << " ";
+    }
+    cout << endl;
+
+    cout << "Result: " << my_function(result) << endl;
     return 0;
 }
