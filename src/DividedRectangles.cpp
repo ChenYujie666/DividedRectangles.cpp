@@ -147,15 +147,15 @@ vector<DirectRectangle> split_interval(const DirectRectangle& rect, const functi
 }
 
 vector<DirectRectangle> direct(const function<double(const vector<double>&)>& f,
-                               const vector<double>& l,
-                               const vector<double>& u,
+                               const vector<double>& lower_bound,
+                               const vector<double>& upper_bound,
                                int max_iterations = 100,
                                double min_radius = 1e-5) {
-    int n = l.size();
+    int n = lower_bound.size();
     auto g = [&](const vector<double>& x) {
         vector<double> scaled(n);
         for (int i = 0; i < n; ++i) {
-            scaled[i] = x[i] * (u[i] - l[i]) + l[i];
+            scaled[i] = x[i] * (upper_bound[i] - lower_bound[i]) + lower_bound[i];
         }
         return f(scaled);
     };
@@ -191,12 +191,12 @@ vector<DirectRectangle> direct(const function<double(const vector<double>&)>& f,
 }
 
 vector<double> optimize(const function<double(const vector<double>&)>& f,
-                        const vector<double>& a,
-                        const vector<double>& b,
+                        const vector<double>& lower_bound,
+                        const vector<double>& upper_bound,
                         int max_iterations = 100,
                         double min_radius = 1e-5) {
-    auto rects = direct(f, a, b, max_iterations, min_radius);
-    if (rects.empty()) return vector<double>(a.size(), 0.5);
+    auto rects = direct(f, lower_bound, upper_bound, max_iterations, min_radius);
+    if (rects.empty()) return vector<double>(lower_bound.size(), 0.5);
 
     auto best = min_element(rects.begin(), rects.end(),
         [](const DirectRectangle& a, const DirectRectangle& b) {
@@ -205,7 +205,7 @@ vector<double> optimize(const function<double(const vector<double>&)>& f,
 
     vector<double> result;
     for (size_t i = 0; i < best->c.size(); ++i) {
-        result.push_back(best->c[i] * (b[i] - a[i]) + a[i]);
+        result.push_back(best->c[i] * (upper_bound[i] - lower_bound[i]) + lower_bound[i]);
     }
 
     return result;
@@ -220,7 +220,7 @@ int main(){
     vector<double> upper_bound = {2, };
     auto result = optimize(my_function, lower_bound, upper_bound, 100, 1e-5);
 
-    
+
     cout << "Optimizing a simple function..." << endl;
     cout << "Result: " << result[0] << endl;
     return 0;
