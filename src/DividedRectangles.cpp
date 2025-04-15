@@ -7,7 +7,7 @@
 #include <iostream>
 #include <cassert>
 
-const double DEFAULT_CCW_TOL = 1e-6;
+#include "DividedRectangles.h"
 
 double clamp(double a, double l, double u)
 {
@@ -17,17 +17,6 @@ double clamp(double a, double l, double u)
         return u;
     return a;
 }
-
-struct DirectRectangle
-{
-    std::vector<double> c;
-    double y;
-    std::vector<int> d;
-    double r;
-
-    DirectRectangle(std::vector<double> c, double y, std::vector<int> d, double r)
-        : c(std::move(c)), y(y), d(std::move(d)), r(r) {}
-};
 
 bool are_equal(const DirectRectangle &a, const DirectRectangle &b, double tol = 1e-9)
 {
