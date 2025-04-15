@@ -5,6 +5,7 @@
 #include <numeric>
 #include <iterator>
 #include <iostream>
+#include <cassert>
 
 const double DEFAULT_CCW_TOL = 1e-6;
 
@@ -87,12 +88,37 @@ std::vector<DirectRectangle> get_split_intervals(std::vector<DirectRectangle> &r
         {
             hull.pop_back();
         }
+        // std::cout << "hull.size() = " << hull.size() << std::endl;
+
+        // std::cout << "hull.size() = " << hull.size() << std::endl;
+        for(int i = 0; i < hull.size(); ++i)
+        {
+            auto h = hull[i];
+            // std::cout << "hull: " << h.y << std::endl;
+            if(i >=1){
+                // std::cout << hull[i].y - hull[i-1].y << std::endl;
+                assert(hull[i].y - hull[i-1].y > 0); 
+                assert(hull[i].r - hull[i-1].r >= 1e-6);
+            }
+        }
+        // hull 中 y越来越大 r也越来越大
 
         while (hull.size() >= 2)
         {
             const DirectRectangle &a = hull.end()[-2];
-            const DirectRectangle &b = hull.end()[-1];
-            if (is_ccw(a, b, rect))
+            const DirectRectangle &b = hull.end()[-1]; // b.y is greater than a.y
+            // assert(b.y > a.y);
+            // assert(b.r > a.r);
+            // assert(rect.r < a.r + 1e-6);
+            // assert(rect.y < a.y+ 1e-6);
+            // assert(rect.y < b.y+ 1e-6);
+            // assert(rect.y < b.y+ 1e-6);
+
+            // std::cout << "x1,x2 = " << a.r << "," << b.r << std::endl;
+            // std::cout << "y1,y2 = " << a.y << "," << b.y << std::endl;
+            // std::cout << "x,y = " << rect.r << "," << rect.y << std::endl;
+
+            if (is_ccw(b, a, rect))
             {
                 hull.pop_back();
             }
@@ -101,14 +127,27 @@ std::vector<DirectRectangle> get_split_intervals(std::vector<DirectRectangle> &r
                 break;
             }
         }
-
+        // std::cout << "hull.size() = " << hull.size() << std::endl;
+        for(int i = 0; i < hull.size(); ++i)
+        {
+            auto h = hull[i];
+            // std::cout << "hull: " << h.y << std::endl;
+            if(i >=1){
+                // std::cout << hull[i].y - hull[i-1].y << std::endl;
+                assert(hull[i].y - hull[i-1].y > 0);
+            }
+        }
         hull.push_back(rect);
     }
 
     auto it = std::remove_if(hull.begin(), hull.end(), [r_min](const DirectRectangle &rect)
                         { return rect.r < r_min - 1e-9; });
     hull.erase(it, hull.end());
-
+    // std::cout << "r_min: " << r_min << std::endl;
+    // for(auto h : hull)
+    // {
+    //     std::cout << "hull: " << h.r <<" "<< h.y << std::endl;
+    // }
     return hull;
 }
 
@@ -195,7 +234,7 @@ std::vector<DirectRectangle> direct(const std::function<double(const std::vector
     for (int k = 0; k < max_iterations; ++k)
     {
         auto candidates = get_split_intervals(rects, min_radius);
-
+        // std::cout << "candidates size: " << candidates.size() << std::endl;
         std::vector<DirectRectangle> new_rects;
         for (const auto &rect : rects)
         {
@@ -381,5 +420,18 @@ int main()
     std::cout << "Result: " << test_func6(result) << std::endl;
     std::cout << std::endl;
 
+    // // Generate some points and test is_ccw
+    // DirectRectangle p1({0.0, 0.0}, 40.0, {0, 0}, 40.0);
+    // DirectRectangle p2({1.0, 0.0}, 60.0, {0, 0}, 80.0);
+    // DirectRectangle p3({0.0, 1.0}, 20.0, {0, 0}, 60.0);
+
+    // if (is_ccw(p1, p2, p3))
+    // {
+    //     std::cout << "The points form a counter-clockwise turn." << std::endl;
+    // }
+    // else
+    // {
+    //     std::cout << "The points do not form a counter-clockwise turn." << std::endl;
+    // }
     return 0;
 }
