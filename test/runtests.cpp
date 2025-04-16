@@ -42,6 +42,8 @@ double stybtang(const std::vector<double> &x) {
 
 int main() {
 
+    std::vector<double> result;
+#if 0
     std::vector<double> lower_bound = {-2};
     std::vector<double> upper_bound = {2};
     test_func1(upper_bound);
@@ -107,9 +109,10 @@ int main() {
     run_test("Optimize rastrigin", std::abs(rastrigin(result) - 0.0) < 1e-2); // Adjust expected value as needed
     // rastrigin is not good   too sharp
 
-
+#endif
 
     // Test function stybtang:
+#if 0
     int i = 1;
     while(i < 10){
         auto s1 = generate_random_vector(i, -1, 1);
@@ -127,20 +130,33 @@ int main() {
         i++;
 
     }
-
+#endif
     // Test 8:
     std::vector<double> lower_bound8(2,1);
     std::vector<double> upper_bound8(2,100);
-    result = optimize(stybtang, lower_bound8, upper_bound8, 100, 1e-5);
-    
-    for(auto r: result)
-    {
-        std::cout << std::fixed << std::setprecision(10) << r << " ";
-    }
-    std::cout << std::endl;
-    std::cout << " bset val "<< stybtang(result) << std::endl;
-    run_test("Optimize stybtang", std::abs(stybtang(result) - 0.0) < 1e-2); // Adjust expected value as needed
+    // int max_iter = 1;
 
+    for (auto i = 0; i < 10; ++i)
+    {
+        int maxiter = 1 << i;
+        result = optimize(stybtang, lower_bound8, upper_bound8, maxiter, 1e-5);
+    
+        
+    
+        
+        std::cout << "maxiter: " << maxiter << std::endl; 
+        // run_test("Optimize stybtang", std::abs(stybtang(result) - 0.0) < 1e-2); // Adjust expected value as needed
+    
+        std::cout << "c++ DiRect best result: [";
+        for(auto r: result)
+        {
+            std::cout << r << " ";
+        }
+        std::cout <<"]"<< std::endl;
+        std::cout << "c++ DiRect best value: "<< stybtang(result) << std::endl;
+        std::cout << std::endl;
+
+    }
 
 
     return 0;
