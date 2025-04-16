@@ -129,9 +129,9 @@ int main() {
     }
 
     // Test 8:
-    std::vector<double> lower_bound8(2,2);
-    std::vector<double> upper_bound8(10,10);
-    result = optimize(stybtang, lower_bound8, upper_bound8, 10, 1e-5);
+    std::vector<double> lower_bound8(2,1);
+    std::vector<double> upper_bound8(2,100);
+    result = optimize(stybtang, lower_bound8, upper_bound8, 100, 1e-5);
     
     for(auto r: result)
     {
