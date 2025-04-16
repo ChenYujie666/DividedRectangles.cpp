@@ -1,0 +1,39 @@
+maxiter: 1
+c++ DiRect best result: [17.5 50.5 ]
+c++ DiRect best value: 88783
+
+maxiter: 2
+c++ DiRect best result: [17.5 17.5 ]
+c++ DiRect best value: 1093.75
+
+maxiter: 4
+c++ DiRect best result: [6.5 6.5 ]
+c++ DiRect best value: -737.75
+
+maxiter: 8
+c++ DiRect best result: [10.5741 10.1667 ]
+c++ DiRect best value: -1105.91
+
+maxiter: 16
+c++ DiRect best result: [10.5087 10.5087 ]
+c++ DiRect best value: -1107.75
+
+maxiter: 32
+c++ DiRect best result: [10.5087 10.5081 ]
+c++ DiRect best value: -1107.75
+
+maxiter: 64
+c++ DiRect best result: [10.5087 10.5081 ]
+c++ DiRect best value: -1107.75
+
+maxiter: 128
+c++ DiRect best result: [10.5087 10.5081 ]
+c++ DiRect best value: -1107.75
+
+maxiter: 256
+c++ DiRect best result: [10.5087 10.5081 ]
+c++ DiRect best value: -1107.75
+
+maxiter: 512
+c++ DiRect best result: [10.5087 10.5081 ]
+c++ DiRect best value: -1107.75

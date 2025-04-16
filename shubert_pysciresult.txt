@@ -1,0 +1,41 @@
+# 这里Python精度有点问题， 要把精度调小才能到全局最小
+# x1 x2 是对称的。。 所以顺序都ok
+maxiter: 1
+scppy.optimize.direct best result:  [1.3333 0.    ]
+scppy.optimize.direct best value:  -13.003
+
+maxiter: 2
+scppy.optimize.direct best result:  [1.3333 0.    ]
+scppy.optimize.direct best value:  -13.003
+
+maxiter: 4
+scppy.optimize.direct best result:  [ 1.3333 -1.3333]
+scppy.optimize.direct best value:  -33.5634
+
+maxiter: 8
+scppy.optimize.direct best result:  [ 1.3333 -1.4321]
+scppy.optimize.direct best value:  -37.517
+
+maxiter: 16
+scppy.optimize.direct best result:  [ 1.3205 -1.4248]
+scppy.optimize.direct best value:  -37.6808
+
+maxiter: 32
+scppy.optimize.direct best result:  [-1.4815 -0.7901]
+scppy.optimize.direct best value:  -179.29
+
+maxiter: 64
+scppy.optimize.direct best result:  [-1.4254 -0.8005]
+scppy.optimize.direct best value:  -186.7307
+
+maxiter: 128
+scppy.optimize.direct best result:  [-1.4254 -0.8005]
+scppy.optimize.direct best value:  -186.7307
+
+maxiter: 256
+scppy.optimize.direct best result:  [-1.4252 -0.8005]
+scppy.optimize.direct best value:  -186.7308
+
+maxiter: 512
+scppy.optimize.direct best result:  [-1.4252 -0.8005]
+scppy.optimize.direct best value:  -186.7308

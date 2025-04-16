@@ -40,6 +40,16 @@ double stybtang(const std::vector<double> &x) {
     return sum;
 }
 
+double shubert(const std::vector<double> &x) {
+    double sum1 = 0, sum2 = 0;
+    for (int i = 1; i <= 5; ++i) {
+        sum1 += i * std::cos((i + 1) * x[0] + i);
+        sum2 += i * std::cos((i + 1) * x[1] + i);
+    }
+
+    return sum1*sum2;
+}
+
 int main() {
 
     std::vector<double> result;
@@ -130,7 +140,7 @@ int main() {
         i++;
 
     }
-#endif
+
     // Test 8:
     std::vector<double> lower_bound8(2,1);
     std::vector<double> upper_bound8(2,100);
@@ -157,7 +167,32 @@ int main() {
         std::cout << std::endl;
 
     }
+    #endif
+    // Test 9:
+    std::vector<double> lower_bound9(2,-2);
+    std::vector<double> upper_bound9(2,2);
+    // int max_iter = 1;
 
+    for (auto i = 0; i < 10; ++i)
+    {
+        int maxiter = 1 << i;
+        result = optimize(shubert, lower_bound9, upper_bound9, maxiter, 1e-5);
+    
+        
+    
+        
+        std::cout << "maxiter: " << maxiter << std::endl; 
+        // run_test("Optimize shubert", std::abs(shubert(result) - 0.0) < 1e-2); // Adjust expected value as needed
+    
+        std::cout << "c++ DiRect best result: [";
+        for(auto r: result)
+        {
+            std::cout << r << " ";
+        }
+        std::cout <<"]"<< std::endl;
+        std::cout << "c++ DiRect best value: "<< shubert(result) << std::endl;
+        std::cout << std::endl;
+    }
 
     return 0;
 }

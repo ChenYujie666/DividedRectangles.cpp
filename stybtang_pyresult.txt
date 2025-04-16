@@ -1,0 +1,39 @@
+maxiter: 1
+scppy.optimize.direct best result:  [17.5 50.5]
+scppy.optimize.direct best value:  88783.0
+
+maxiter: 2
+scppy.optimize.direct best result:  [17.5 50.5]
+scppy.optimize.direct best value:  88783.0
+
+maxiter: 4
+scppy.optimize.direct best result:  [ 6.5 17.5]
+scppy.optimize.direct best value:  178.0
+
+maxiter: 8
+scppy.optimize.direct best result:  [10.1667 10.1667]
+scppy.optimize.direct best value:  -1104.213
+
+maxiter: 16
+scppy.optimize.direct best result:  [10.5741 10.5741]
+scppy.optimize.direct best value:  -1107.6161
+
+maxiter: 32
+scppy.optimize.direct best result:  [10.5741 10.5741]
+scppy.optimize.direct best value:  -1107.6161
+
+maxiter: 64
+scppy.optimize.direct best result:  [10.5741 10.5741]
+scppy.optimize.direct best value:  -1107.6161
+
+maxiter: 128
+scppy.optimize.direct best result:  [10.5741 10.5741]
+scppy.optimize.direct best value:  -1107.6161
+
+maxiter: 256
+scppy.optimize.direct best result:  [10.5741 10.5741]
+scppy.optimize.direct best value:  -1107.6161
+
+maxiter: 512
+scppy.optimize.direct best result:  [10.5741 10.5741]
+scppy.optimize.direct best value:  -1107.6161
