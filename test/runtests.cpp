@@ -35,8 +35,9 @@ double rastrigin(const std::vector<double> &x) {
 double stybtang(const std::vector<double> &x) {
     double sum = 0;
     for(auto xi:x){
-        sum += xi*xi*xi - 16*xi*xi + 5*xi;
+        sum += (xi*xi*xi*xi - 16*xi*xi + 5*xi);
     }
+    sum /= 2.0;
     return sum;
 }
 
@@ -141,9 +142,10 @@ int main() {
 
     }
 
+
     // Test 8:
-    std::vector<double> lower_bound8(2,1);
-    std::vector<double> upper_bound8(2,100);
+    std::vector<double> lower_bound8(2,-2);
+    std::vector<double> upper_bound8(2,2);
     // int max_iter = 1;
 
     for (auto i = 0; i < 10; ++i)
@@ -167,7 +169,7 @@ int main() {
         std::cout << std::endl;
 
     }
-    #endif
+
     // Test 9:
     std::vector<double> lower_bound9(2,-2);
     std::vector<double> upper_bound9(2,2);
@@ -178,9 +180,6 @@ int main() {
         int maxiter = 1 << i;
         result = optimize(shubert, lower_bound9, upper_bound9, maxiter, 1e-5);
     
-        
-    
-        
         std::cout << "maxiter: " << maxiter << std::endl; 
         // run_test("Optimize shubert", std::abs(shubert(result) - 0.0) < 1e-2); // Adjust expected value as needed
     
@@ -193,6 +192,31 @@ int main() {
         std::cout << "c++ DiRect best value: "<< shubert(result) << std::endl;
         std::cout << std::endl;
     }
+#endif
+
+    // Test 10: check mid point
+    std::vector<double> lower_bound10 = {-5, -5};
+    std::vector<double> upper_bound10 = {5, 5};
+    int maxiter = 30;
+
+
+    auto f = stybtang;
+    auto lower_bound = lower_bound10;
+    auto upper_bound = upper_bound10;
+
+    result = optimize(f, lower_bound, upper_bound, maxiter, 1e-5);
+
+    std::cout << "maxiter: " << maxiter << std::endl; 
+    // run_test("Optimize shubert", std::abs(shubert(result) - 0.0) < 1e-2); // Adjust expected value as needed
+
+    std::cout << "c++ DiRect best result: [";
+    for(auto r: result)
+    {
+        std::cout << r << " ";
+    }
+    std::cout <<"]"<< std::endl;
+    std::cout << "c++ DiRect best value: "<< f(result) << std::endl;
+    std::cout << std::endl;
 
     return 0;
 }

@@ -73,7 +73,7 @@ std::vector<DirectRectangle> get_split_intervals(std::vector<DirectRectangle> &r
             continue;
         }
 
-        while (!hull.empty() && rect.y <= hull.back().y)
+        if (!hull.empty() && rect.y <= hull.back().y)
         {
             hull.pop_back();
         }
@@ -86,13 +86,13 @@ std::vector<DirectRectangle> get_split_intervals(std::vector<DirectRectangle> &r
             // std::cout << "hull: " << h.y << std::endl;
             if(i >=1){
                 // std::cout << hull[i].y - hull[i-1].y << std::endl;
-                assert(hull[i].y - hull[i-1].y > 0); 
-                assert(hull[i].r - hull[i-1].r >= 1e-6);
+                // assert(hull[i].y - hull[i-1].y > 0); 
+                // assert(hull[i].r - hull[i-1].r >= 1e-6);
             }
         }
         // hull 中 y越来越大 r也越来越大
 
-        while (hull.size() >= 2)
+        if (hull.size() >= 2)
         {
             const DirectRectangle &a = hull.end()[-2];
             const DirectRectangle &b = hull.end()[-1]; // b.y is greater than a.y
@@ -102,19 +102,19 @@ std::vector<DirectRectangle> get_split_intervals(std::vector<DirectRectangle> &r
             // assert(rect.y < a.y+ 1e-6);
             // assert(rect.y < b.y+ 1e-6);
             // assert(rect.y < b.y+ 1e-6);
-
-            // std::cout << "x1,x2 = " << a.r << "," << b.r << std::endl;
-            // std::cout << "y1,y2 = " << a.y << "," << b.y << std::endl;
+            // assert(a2.y > b1.y - 1e-6);
+            // std::cout << "x1,y1 = " << a1.r << "," << b2.y << std::endl;
+            // std::cout << "x2,y2 = " << a1.r << "," << b2.y << std::endl;
             // std::cout << "x,y = " << rect.r << "," << rect.y << std::endl;
 
-            if (is_ccw(b, a, rect))
+            if (is_ccw(a, b, rect))
             {
                 hull.pop_back();
             }
-            else
-            {
-                break;
-            }
+            // else
+            // {
+            //     break;
+            // }
         }
         // std::cout << "hull.size() = " << hull.size() << std::endl;
         for(int i = 0; i < hull.size(); ++i)
@@ -123,7 +123,7 @@ std::vector<DirectRectangle> get_split_intervals(std::vector<DirectRectangle> &r
             // std::cout << "hull: " << h.y << std::endl;
             if(i >=1){
                 // std::cout << hull[i].y - hull[i-1].y << std::endl;
-                assert(hull[i].y - hull[i-1].y > 0);
+                // assert(hull[i].y - hull[i-1].y > 0);
             }
         }
         hull.push_back(rect);
@@ -222,8 +222,52 @@ std::vector<DirectRectangle> direct(const std::function<double(const std::vector
 
     for (int k = 0; k < max_iterations; ++k)
     {
+
+        std::cout << std::endl;
+        std::cout << "#**************************************" << std::endl;
+        std::cout << "#iteration: " << k << std::endl;
+        std::cout << "plt.clf()" << std::endl;
+
+        std::cout << "plt.xlim((0,1))" << std::endl;
+
+        std::cout << "plt.ylim((-200,200))" << std::endl;
+
+
+        std::cout << "plt.scatter([" ;
+        for (auto rect:rects)
+        {
+            std::cout << rect.r << ", " ;
+        }
+        std::cout << "], " << std::endl;
+
+        std::cout << "[" ;
+        for (auto rect:rects)
+        {
+            std::cout << rect.y << ", " ;
+        }
+        std::cout << "])" << std::endl;
+        
         auto candidates = get_split_intervals(rects, min_radius);
         // std::cout << "candidates size: " << candidates.size() << std::endl;
+        std::cout << "plt.scatter([" ;
+        for (auto rect:candidates)
+        {
+            std::cout << rect.r << ", " ;
+        }
+        std::cout << "], " << std::endl;
+        std::cout << "[" ;
+        for (auto rect:candidates)
+        {
+            std::cout << rect.y << ", " ;
+        }
+        std::cout << "])" << std::endl;
+        std::cout << "plt.title(" << "'"  << "iter "  << k << " select:" << candidates.size()  << "/" << rects.size() << "'" <<  ")" << std::endl;
+        // std::cout << "plt.show()" << std::endl;
+        std::cout << "plt.pause(2)" << std::endl;
+        std::cout << "plt.ioff()" << std::endl;
+
+        std::cout << std::endl;
+
         std::vector<DirectRectangle> new_rects;
         for (const auto &rect : rects)
         {
