@@ -77,66 +77,33 @@ std::vector<DirectRectangle> get_split_intervals(std::vector<DirectRectangle> &r
         {
             hull.pop_back();
         }
-        // std::cout << "hull.size() = " << hull.size() << std::endl;
 
-        // std::cout << "hull.size() = " << hull.size() << std::endl;
-        for(int i = 0; i < hull.size(); ++i)
-        {
-            auto h = hull[i];
-            // std::cout << "hull: " << h.y << std::endl;
-            if(i >=1){
-                // std::cout << hull[i].y - hull[i-1].y << std::endl;
-                // assert(hull[i].y - hull[i-1].y > 0); 
-                // assert(hull[i].r - hull[i-1].r >= 1e-6);
-            }
-        }
+        
         // hull 中 y越来越大 r也越来越大
 
         if (hull.size() >= 2)
         {
             const DirectRectangle &a = hull.end()[-2];
             const DirectRectangle &b = hull.end()[-1]; // b.y is greater than a.y
-            // assert(b.y > a.y);
-            // assert(b.r > a.r);
-            // assert(rect.r < a.r + 1e-6);
-            // assert(rect.y < a.y+ 1e-6);
-            // assert(rect.y < b.y+ 1e-6);
-            // assert(rect.y < b.y+ 1e-6);
-            // assert(a2.y > b1.y - 1e-6);
-            // std::cout << "x1,y1 = " << a1.r << "," << b2.y << std::endl;
-            // std::cout << "x2,y2 = " << a1.r << "," << b2.y << std::endl;
-            // std::cout << "x,y = " << rect.r << "," << rect.y << std::endl;
 
+            
             if (is_ccw(a, b, rect))
             {
                 hull.pop_back();
             }
-            // else
-            // {
-            //     break;
-            // }
+
+            
         }
-        // std::cout << "hull.size() = " << hull.size() << std::endl;
-        for(int i = 0; i < hull.size(); ++i)
-        {
-            auto h = hull[i];
-            // std::cout << "hull: " << h.y << std::endl;
-            if(i >=1){
-                // std::cout << hull[i].y - hull[i-1].y << std::endl;
-                // assert(hull[i].y - hull[i-1].y > 0);
-            }
-        }
+
+        
         hull.push_back(rect);
     }
 
     auto it = std::remove_if(hull.begin(), hull.end(), [r_min](const DirectRectangle &rect)
                         { return rect.r < r_min - 1e-9; });
     hull.erase(it, hull.end());
-    // std::cout << "r_min: " << r_min << std::endl;
-    // for(auto h : hull)
-    // {
-    //     std::cout << "hull: " << h.r <<" "<< h.y << std::endl;
-    // }
+
+    
     return hull;
 }
 
@@ -222,7 +189,7 @@ std::vector<DirectRectangle> direct(const std::function<double(const std::vector
 
     for (int k = 0; k < max_iterations; ++k)
     {
-
+#if 0
         std::cout << std::endl;
         std::cout << "#**************************************" << std::endl;
         std::cout << "#iteration: " << k << std::endl;
@@ -246,8 +213,10 @@ std::vector<DirectRectangle> direct(const std::function<double(const std::vector
             std::cout << rect.y << ", " ;
         }
         std::cout << "])" << std::endl;
-        
+#endif
         auto candidates = get_split_intervals(rects, min_radius);
+
+#if 0
         // std::cout << "candidates size: " << candidates.size() << std::endl;
         std::cout << "plt.scatter([" ;
         for (auto rect:candidates)
@@ -263,11 +232,13 @@ std::vector<DirectRectangle> direct(const std::function<double(const std::vector
         std::cout << "])" << std::endl;
         std::cout << "plt.title(" << "'"  << "iter "  << k << " select:" << candidates.size()  << "/" << rects.size() << "'" <<  ")" << std::endl;
         // std::cout << "plt.show()" << std::endl;
+        std::cout << "plt.savefig('iter" << k << ".jpg')" << std::endl;
+
         std::cout << "plt.pause(2)" << std::endl;
         std::cout << "plt.ioff()" << std::endl;
 
         std::cout << std::endl;
-
+#endif
         std::vector<DirectRectangle> new_rects;
         for (const auto &rect : rects)
         {
