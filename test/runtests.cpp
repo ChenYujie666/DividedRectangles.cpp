@@ -33,12 +33,12 @@ double rastrigin(const std::vector<double> &x) {
 }
 
 double stybtang(const std::vector<double> &x) {
-    double sum = 0;
+    double sum = 0.0;
     for(auto xi:x){
-        sum += (xi*xi*xi*xi - 16*xi*xi + 5*xi);
+        sum += (xi*xi*xi*xi - 16.0*xi*xi + 5.0*xi);
     }
-    sum /= 2.0;
-    return sum;
+    // sum /= 2.0;
+    return sum/2.0;
 }
 
 double shubert(const std::vector<double> &x) {
@@ -194,10 +194,11 @@ int main() {
     }
 #endif
 
+
     // Test 10: check mid point
-    std::vector<double> lower_bound10 = {-5, -5};
-    std::vector<double> upper_bound10 = {5, 5};
-    int maxiter = 30;
+    std::vector<double> lower_bound10 = {-5, -5 };
+    std::vector<double> upper_bound10 = {5, 5 };
+    int maxiter = 15;
 
 
     auto f = stybtang;
@@ -205,6 +206,31 @@ int main() {
     auto upper_bound = upper_bound10;
 
     result = optimize(f, lower_bound, upper_bound, maxiter, 1e-5);
+    std::cout << "stybtang" << std::endl;
+    std::cout << "maxiter: " << maxiter << std::endl; 
+    // run_test("Optimize shubert", std::abs(shubert(result) - 0.0) < 1e-2); // Adjust expected value as needed
+
+    std::cout << "c++ DiRect best result: [";
+    for(auto r: result)
+    {
+        std::cout << r << " ";
+    }
+    std::cout <<"]"<< std::endl;
+    std::cout << "c++ DiRect best value: "<< f(result) << std::endl;
+    std::cout << std::endl;
+
+
+    // Test 11: check mid point
+    std::vector<double> lower_bound11(2,-5);
+    std::vector<double> upper_bound11(2, 5);
+    
+    f = shubert;
+    lower_bound = lower_bound11;
+    upper_bound = upper_bound11;
+    maxiter = 150;
+
+    result = optimize(f, lower_bound, upper_bound, maxiter, 1e-5);
+    std::cout << "shubert" << std::endl;
 
     std::cout << "maxiter: " << maxiter << std::endl; 
     // run_test("Optimize shubert", std::abs(shubert(result) - 0.0) < 1e-2); // Adjust expected value as needed
@@ -217,6 +243,61 @@ int main() {
     std::cout <<"]"<< std::endl;
     std::cout << "c++ DiRect best value: "<< f(result) << std::endl;
     std::cout << std::endl;
+
+    result = optimize(f, lower_bound, upper_bound, maxiter, 1e-8);
+    std::cout << "shubert" << std::endl;
+
+    std::cout << "maxiter: " << maxiter << std::endl; 
+    // run_test("Optimize shubert", std::abs(shubert(result) - 0.0) < 1e-2); // Adjust expected value as needed
+
+    std::cout << "c++ DiRect best result: [";
+    for(auto r: result)
+    {
+        std::cout << r << " ";
+    }
+    std::cout <<"]"<< std::endl;
+    std::cout << "c++ DiRect best value: "<< f(result) << std::endl;
+    std::cout << std::endl;
+
+    result = optimize(f, lower_bound, upper_bound, maxiter, 1e-10);
+    std::cout << "shubert" << std::endl;
+
+    std::cout << "maxiter: " << maxiter << std::endl; 
+    // run_test("Optimize shubert", std::abs(shubert(result) - 0.0) < 1e-2); // Adjust expected value as needed
+
+    std::cout << "c++ DiRect best result: [";
+    for(auto r: result)
+    {
+        std::cout << r << " ";
+    }
+    std::cout <<"]"<< std::endl;
+    std::cout << "c++ DiRect best value: "<< f(result) << std::endl;
+    std::cout << std::endl;
+
+
+
+
+    // Test 12: 
+    {
+    std::vector<double> lower_bound12(2,-2);
+    std::vector<double> upper_bound12(2, 2);
+    maxiter = 150;
+    f = stybtang;
+    result = optimize(f, lower_bound12, upper_bound12, maxiter, 1e-5);
+    std::cout << "stybtang" << std::endl;
+
+    std::cout << "maxiter: " << maxiter << std::endl; 
+    // run_test("Optimize shubert", std::abs(shubert(result) - 0.0) < 1e-2); // Adjust expected value as needed
+
+    std::cout << "c++ DiRect best result: [";
+    for(auto r: result)
+    {
+        std::cout << r << " ";
+    }
+    std::cout <<"]"<< std::endl;
+    std::cout << "c++ DiRect best value: "<< f(result) << std::endl;
+    std::cout << std::endl;
+    }
 
     return 0;
 }
