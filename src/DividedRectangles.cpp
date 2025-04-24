@@ -63,7 +63,7 @@ double compute_radius(const std::vector<int> &d)
 std::vector<DirectRectangle> get_split_intervals(std::vector<DirectRectangle> &rects, double r_min)
 {
     std::sort(rects.begin(), rects.end(), [](const DirectRectangle &a, const DirectRectangle &b)
-         { return (a.r != b.r) ? (a.r < b.r) : (a.y < b.y); });
+              { return (a.r != b.r) ? (a.r < b.r) : (a.y < b.y); });
 
     std::vector<DirectRectangle> hull;
     for (const auto &rect : rects)
@@ -78,32 +78,24 @@ std::vector<DirectRectangle> get_split_intervals(std::vector<DirectRectangle> &r
             hull.pop_back();
         }
 
-        
-        // hull 中 y越来越大 r也越来越大
-
         if (hull.size() >= 2)
         {
             const DirectRectangle &a = hull.end()[-2];
             const DirectRectangle &b = hull.end()[-1]; // b.y is greater than a.y
 
-            
             if (is_ccw(a, b, rect))
             {
                 hull.pop_back();
             }
-
-            
         }
 
-        
         hull.push_back(rect);
     }
 
     auto it = std::remove_if(hull.begin(), hull.end(), [r_min](const DirectRectangle &rect)
-                        { return rect.r < r_min - 1e-9; });
+                             { return rect.r < r_min - 1e-9; });
     hull.erase(it, hull.end());
 
-    
     return hull;
 }
 
@@ -148,7 +140,7 @@ std::vector<DirectRectangle> split_interval(const DirectRectangle &rect, const s
     std::vector<size_t> indices(dirs.size());
     std::iota(indices.begin(), indices.end(), 0);
     std::sort(indices.begin(), indices.end(), [&minvals](size_t a, size_t b)
-         { return minvals[a] < minvals[b]; });
+              { return minvals[a] < minvals[b]; });
 
     std::vector<DirectRectangle> new_rects;
     std::vector<int> current_d = d;
@@ -167,10 +159,10 @@ std::vector<DirectRectangle> split_interval(const DirectRectangle &rect, const s
 }
 
 std::vector<DirectRectangle> direct(const std::function<double(const std::vector<double> &)> &f,
-                               const std::vector<double> &lower_bound,
-                               const std::vector<double> &upper_bound,
-                               int max_iterations = 100,
-                               double min_radius = 1e-5)
+                                    const std::vector<double> &lower_bound,
+                                    const std::vector<double> &upper_bound,
+                                    int max_iterations = 100,
+                                    double min_radius = 1e-5)
 {
     int n = lower_bound.size();
     auto g = [&](const std::vector<double> &x)
@@ -268,20 +260,20 @@ std::vector<DirectRectangle> direct(const std::function<double(const std::vector
 }
 
 std::vector<double> optimize(const std::function<double(const std::vector<double> &)> &f,
-                        const std::vector<double> &lower_bound,
-                        const std::vector<double> &upper_bound,
-                        int max_iterations = 100,
-                        double min_radius = 1e-5)
+                             const std::vector<double> &lower_bound,
+                             const std::vector<double> &upper_bound,
+                             int max_iterations = 100,
+                             double min_radius = 1e-5)
 {
     auto rects = direct(f, lower_bound, upper_bound, max_iterations, min_radius);
     if (rects.empty())
         return std::vector<double>(lower_bound.size(), 0.5);
 
     auto best = std::min_element(rects.begin(), rects.end(),
-                            [](const DirectRectangle &a, const DirectRectangle &b)
-                            {
-                                return a.y < b.y;
-                            });
+                                 [](const DirectRectangle &a, const DirectRectangle &b)
+                                 {
+                                     return a.y < b.y;
+                                 });
 
     std::vector<double> result;
     for (size_t i = 0; i < best->c.size(); ++i)
@@ -298,31 +290,29 @@ double test_func1(const std::vector<double> &x)
 
 double test_func2(const std::vector<double> &x)
 {
-    return 1*x[0]*x[0]+x[1]*x[1]+2;
+    return 1 * x[0] * x[0] + x[1] * x[1] + 2;
 }
 
 double test_func3(const std::vector<double> &x)
 {
-    return x[0]*x[0]+x[1]*x[1]+x[2]*x[2]+3;
+    return x[0] * x[0] + x[1] * x[1] + x[2] * x[2] + 3;
 }
-
 
 double test_func4(const std::vector<double> &x)
 {
     // A simple quadratic function
     float x0_bias = 1;
-    return (x[0]+x0_bias)*(x[0]+x0_bias)+(x[1]+x0_bias)*(x[1]+x0_bias)+(x[2]+x0_bias)*(x[2]+x0_bias)+(x[3]+x0_bias)*(x[3]+x0_bias)+4;
+    return (x[0] + x0_bias) * (x[0] + x0_bias) + (x[1] + x0_bias) * (x[1] + x0_bias) + (x[2] + x0_bias) * (x[2] + x0_bias) + (x[3] + x0_bias) * (x[3] + x0_bias) + 4;
 }
 
 double test_func5(const std::vector<double> &x)
 {
     // A Rosenbrock function (common optimization benchmark)
-    return x[0]*x[0]+x[1]*x[1]+x[2]*x[2]+x[3]*x[3]+x[4]*x[4]+5;
+    return x[0] * x[0] + x[1] * x[1] + x[2] * x[2] + x[3] * x[3] + x[4] * x[4] + 5;
 }
-
 
 double test_func6(const std::vector<double> &x)
 {
     // A sinusoidal function with multiple dimensions
-    return x[0]+x[1]+x[2]+x[3]+x[4]+x[5];
+    return x[0] + x[1] + x[2] + x[3] + x[4] + x[5];
 }
