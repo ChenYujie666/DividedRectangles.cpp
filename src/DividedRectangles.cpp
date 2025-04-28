@@ -1,3 +1,58 @@
+/**
+ * @file DividedRectangles.cpp
+ * @brief Implementation of a DIRECT (DIviding RECTangles) optimization algorithm.
+ * 
+ * This file contains the implementation of the DIRECT optimization algorithm, which is
+ * a derivative-free global optimization method. The algorithm divides the search space
+ * into hyper-rectangles and iteratively refines the search by splitting intervals based
+ * on a given objective function. The implementation supports multi-dimensional optimization.
+ * 
+ * The file also includes several test functions to demonstrate the usage of the optimization
+ * algorithm.
+ * 
+ * @details
+ * - The `DirectRectangle` structure represents a hyper-rectangle in the search space.
+ * - The `direct` function implements the main DIRECT algorithm.
+ * - The `optimize` function provides a user-friendly interface for optimization.
+ * - Several helper functions are included for interval splitting, radius computation,
+ *   and convex hull construction.
+ * - Debugging information can be written to files when `DEBUG_MODE` is enabled.
+ * 
+ * @dependencies
+ * - Standard C++ libraries: `<vector>`, `<cmath>`, `<algorithm>`, `<functional>`, `<numeric>`,
+ *   `<iterator>`, `<iostream>`, `<cassert>`, `<fstream>`.
+ * - Custom header: `"DividedRectangles.h"`.
+ * 
+ * @functions
+ * - `clamp`: Clamps a value between lower and upper bounds.
+ * - `are_equal`: Compares two `DirectRectangle` objects for equality within a tolerance.
+ * - `is_ccw`: Checks if three rectangles form a counter-clockwise turn.
+ * - `basis`: Generates a basis vector for a given dimension.
+ * - `compute_radius`: Computes the radius of a rectangle based on its division levels.
+ * - `get_split_intervals`: Identifies candidate rectangles for splitting.
+ * - `split_interval`: Splits a rectangle into smaller rectangles based on the objective function.
+ * - `direct`: Implements the DIRECT optimization algorithm.
+ * - `optimize`: Provides a simplified interface for optimization.
+ * - Test functions (`test_func1` to `test_func6`): Example objective functions for testing.
+ * 
+ * @debugging
+ * - Debugging information is written to files in the `./debugdata/` directory when
+ *   `DEBUG_MODE` is defined.
+ * - Debug files include `rects.txt`, `candidates.txt`, and `new_rects.txt`.
+ * 
+ * @usage
+ * - Include this file and the corresponding header in your project.
+ * - Define an objective function as a `std::function<double(const std::vector<double>&)>`.
+ * - Call the `optimize` function with the objective function, bounds, and optional parameters.
+ * 
+ * @example
+ * ```
+ * std::vector<double> lower_bound = {0.0};
+ * std::vector<double> upper_bound = {1.0};
+ * auto result = optimize(test_func1, lower_bound, upper_bound);
+ * std::cout << "Optimal value: " << result[0] << std::endl;
+ * ```
+ */
 #include <vector>
 #include <cmath>
 #include <algorithm>
@@ -6,8 +61,39 @@
 #include <iterator>
 #include <iostream>
 #include <cassert>
+#include <fstream>
 
 #include "DividedRectangles.h"
+
+#define DEBUG_MODE
+#ifdef DEBUG_MODE
+void write_debug_info(const std::vector<DirectRectangle> &rects, const std::string &filename, int iter)
+{
+    std::ofstream debug_file(filename, std::ios_base::app);
+    for (const auto &rect : rects)
+    {
+        debug_file << iter << "\t" << rect.r << "\t" << rect.y << "\t[";
+        for (size_t i = 0; i < rect.c.size(); ++i)
+        {
+            debug_file << rect.c[i];
+            if (i < rect.c.size() - 1)
+                debug_file << ", ";
+        }
+        debug_file << "]\t[";
+        for (size_t i = 0; i < rect.d.size(); ++i)
+        {
+            debug_file << rect.d[i];
+            if (i < rect.d.size() - 1)
+                debug_file << ", ";
+        }
+        debug_file << "]" << std::endl;
+    }
+    debug_file.close();
+}
+#endif
+
+// Function to clamp a value between lower and upper bounds
+
 
 double clamp(double a, double l, double u)
 {
@@ -181,55 +267,13 @@ std::vector<DirectRectangle> direct(const std::function<double(const std::vector
 
     for (int k = 0; k < max_iterations; ++k)
     {
-#if 0
-        std::cout << std::endl;
-        std::cout << "#**************************************" << std::endl;
-        std::cout << "#iteration: " << k << std::endl;
-        std::cout << "plt.clf()" << std::endl;
-
-        std::cout << "plt.xlim((0,1))" << std::endl;
-
-        std::cout << "plt.ylim((-200,200))" << std::endl;
-
-
-        std::cout << "plt.scatter([" ;
-        for (auto rect:rects)
-        {
-            std::cout << rect.r << ", " ;
-        }
-        std::cout << "], " << std::endl;
-
-        std::cout << "[" ;
-        for (auto rect:rects)
-        {
-            std::cout << rect.y << ", " ;
-        }
-        std::cout << "])" << std::endl;
+#ifdef DEBUG_MODE
+        write_debug_info(rects, "./debugdata/rects.txt", k);
 #endif
         auto candidates = get_split_intervals(rects, min_radius);
 
-#if 0
-        // std::cout << "candidates size: " << candidates.size() << std::endl;
-        std::cout << "plt.scatter([" ;
-        for (auto rect:candidates)
-        {
-            std::cout << rect.r << ", " ;
-        }
-        std::cout << "], " << std::endl;
-        std::cout << "[" ;
-        for (auto rect:candidates)
-        {
-            std::cout << rect.y << ", " ;
-        }
-        std::cout << "])" << std::endl;
-        std::cout << "plt.title(" << "'"  << "iter "  << k << " select:" << candidates.size()  << "/" << rects.size() << "'" <<  ")" << std::endl;
-        // std::cout << "plt.show()" << std::endl;
-        std::cout << "plt.savefig('iter" << k << ".jpg')" << std::endl;
-
-        std::cout << "plt.pause(2)" << std::endl;
-        std::cout << "plt.ioff()" << std::endl;
-
-        std::cout << std::endl;
+#ifdef DEBUG_MODE
+        write_debug_info(candidates, "./debugdata/candidates.txt", k);
 #endif
         std::vector<DirectRectangle> new_rects;
         for (const auto &rect : rects)
@@ -254,6 +298,11 @@ std::vector<DirectRectangle> direct(const std::function<double(const std::vector
         }
 
         rects = std::move(new_rects);
+
+#ifdef DEBUG_MODE
+        write_debug_info(rects, "./debugdata/new_rects.txt", k);
+#endif
+
     }
 
     return rects;
