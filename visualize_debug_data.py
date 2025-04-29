@@ -60,29 +60,45 @@ def animate_debug_data(debug_info1, debug_info2, debug_info3, iteration_column=0
     ax.set_ylabel("Function Value")
     ax.set_title("Radius vs Function Value Across Iterations (Animated)")
 
-    scatter1, = ax.plot([], [], 'bo', alpha=0.5, label="Rects")
-    scatter2, = ax.plot([], [], 'go', alpha=0.5, label="Candidates")
-    scatter3, = ax.plot([], [], 'ro', alpha=0.1, label="New Rects")
-    ax.legend()
-
     def update(frame):
-        iter_data1 = debug_info1[debug_info1[iteration_column] <= frame]
-        iter_data2 = debug_info2[debug_info2[iteration_column] <= frame]
-        iter_data3 = debug_info3[debug_info3[iteration_column] <= frame]
+        ax.clear()  # Clear the previous frame
+        ax.set_xlim(0, debug_info1[radius_column].max())
+        ax.set_ylim(debug_info1[value_column].min(), debug_info1[value_column].max())
+        ax.set_xlabel("Radius")
+        ax.set_ylabel("Function Value")
+        ax.set_title("Radius vs Function Value Across Iterations (Animated)"+str(frame))
 
-        scatter1.set_data(iter_data1[radius_column], iter_data1[value_column])
-        scatter2.set_data(iter_data2[radius_column], iter_data2[value_column])
-        scatter3.set_data(iter_data3[radius_column], iter_data3[value_column])
+        iter_data1 = debug_info1[debug_info1[iteration_column] == frame]
+        iter_data2 = debug_info2[debug_info2[iteration_column] == frame]
+        iter_data3 = debug_info3[debug_info3[iteration_column] == frame]
+        ax.plot(iter_data1[radius_column], iter_data1[value_column], 'yo', alpha=0.9, label="New Rects", markersize=10)
+        ax.plot(iter_data2[radius_column], iter_data2[value_column], 'gp',alpha=0.9, label="Rects", markersize=6)
+        ax.plot(iter_data3[radius_column], iter_data3[value_column], 'rP', alpha=0.9, label="Candidates", markersize=8, linestyle='dotted', marker='>')
+        ax.legend()
 
-        return scatter1, scatter2, scatter3
+    def on_click(event):
+        nonlocal frame
+        if event.button == 1:  # Left click to go forward
+            frame += 1
+            if frame >= len(frames):
+                frame = 0
+        elif event.button == 3:  # Right click to go backward
+            frame -= 1
+            if frame < 0:
+                frame = len(frames) - 1
+        update(frame)
+        fig.canvas.draw()
 
-    ani = animation.FuncAnimation(fig, update, frames=range(int(debug_info1[iteration_column].max()) + 1), interval=500, blit=True)
+    frame = 0
+    frames = range(int(debug_info1[iteration_column].max()) + 1)
+    fig.canvas.mpl_connect('button_press_event', on_click)
+    update(frame)
     plt.show()
 
 if __name__ == "__main__":
-    debug_file_path1 = "d:\\CodeLab\\DividedRectangles.cpp\\debugdata\\rects.txt"
-    debug_file_path2 = "d:\\CodeLab\\DividedRectangles.cpp\\debugdata\\candidates.txt"
-    debug_file_path3 = "d:\\CodeLab\\DividedRectangles.cpp\\debugdata\\new_rects.txt"
+    debug_file_path1 = "d:\\CodeLab\\DividedRectangles.cpp\\debugdata\\new_rects.txt"
+    debug_file_path2 = "d:\\CodeLab\\DividedRectangles.cpp\\debugdata\\rects.txt"
+    debug_file_path3 = "d:\\CodeLab\\DividedRectangles.cpp\\debugdata\\candidates.txt"
 
     try:
         debug_info1 = read_debug_info(debug_file_path1)
