@@ -148,8 +148,8 @@ double compute_radius(const std::vector<int> &d)
 
 std::vector<DirectRectangle> get_split_intervals(std::vector<DirectRectangle> &rects, double r_min)
 {
-    std::sort(rects.begin(), rects.end(), [](const DirectRectangle &a, const DirectRectangle &b)
-              { return (a.r != b.r) ? (a.r < b.r) : (a.y < b.y); });
+    std::sort(rects.begin(), rects.end(), [r_min](const DirectRectangle &a, const DirectRectangle &b)
+              { return (std::abs(a.r - b.r) >= r_min) ? (a.r < b.r) : (a.y < b.y); });
 
     std::vector<DirectRectangle> hull;
     for (const auto &rect : rects)
@@ -300,7 +300,7 @@ std::vector<DirectRectangle> direct(const std::function<double(const std::vector
         rects = std::move(new_rects);
 
 #ifdef DEBUG_MODE
-        write_debug_info(rects, "./debugdata/new_rects.txt", k);
+        write_debug_info(rects, "./debugdata/new_rects.txt", k+1);
 #endif
 
     }
