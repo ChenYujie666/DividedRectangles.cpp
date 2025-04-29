@@ -96,9 +96,9 @@ def animate_debug_data(debug_info1, debug_info2, debug_info3, iteration_column=0
     plt.show()
 
 if __name__ == "__main__":
-    debug_file_path1 = "d:\\CodeLab\\DividedRectangles.cpp\\debugdata\\new_rects.txt"
-    debug_file_path2 = "d:\\CodeLab\\DividedRectangles.cpp\\debugdata\\rects.txt"
-    debug_file_path3 = "d:\\CodeLab\\DividedRectangles.cpp\\debugdata\\candidates.txt"
+    debug_file_path1 = ".\\debugdata\\new_rects.txt"
+    debug_file_path2 = ".\\debugdata\\rects.txt"
+    debug_file_path3 = ".\\debugdata\\candidates.txt"
 
     try:
         debug_info1 = read_debug_info(debug_file_path1)
