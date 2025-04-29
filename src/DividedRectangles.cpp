@@ -179,7 +179,7 @@ std::vector<DirectRectangle> get_split_intervals(std::vector<DirectRectangle> &r
     }
 
     auto it = std::remove_if(hull.begin(), hull.end(), [r_min](const DirectRectangle &rect)
-                             { return rect.r < r_min - 1e-9; });
+                             { return rect.r < r_min; });
     hull.erase(it, hull.end());
 
     return hull;
@@ -295,13 +295,15 @@ std::vector<DirectRectangle> direct(const std::function<double(const std::vector
         {
             auto split = split_interval(c, g);
             new_rects.insert(new_rects.end(), split.begin(), split.end());
+
+#ifdef DEBUG_MODE
+        write_debug_info(split, "./debugdata/new_rects.txt", k+1);
+#endif
         }
+
 
         rects = std::move(new_rects);
 
-#ifdef DEBUG_MODE
-        write_debug_info(rects, "./debugdata/new_rects.txt", k+1);
-#endif
 
     }
 
