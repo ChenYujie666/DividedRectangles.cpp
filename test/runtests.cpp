@@ -192,7 +192,6 @@ int main() {
         std::cout << "c++ DiRect best value: "<< shubert(result) << std::endl;
         std::cout << std::endl;
     }
-#endif
 
 
     // Test 10: check mid point
@@ -275,14 +274,15 @@ int main() {
     std::cout << std::endl;
 
 
+#endif
 
 
     // Test 12: 
     {
     std::vector<double> lower_bound12(2,-2);
     std::vector<double> upper_bound12(2, 2);
-    maxiter = 150;
-    f = stybtang;
+    auto maxiter = 150;
+    auto f = stybtang;
     result = optimize(f, lower_bound12, upper_bound12, maxiter, 1e-5);
     std::cout << "stybtang" << std::endl;
 
