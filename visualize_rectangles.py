@@ -51,15 +51,27 @@ if __name__ == "__main__":
 
 
 
+
+    df = read_debug_data(".\\debugdata\\rects.txt")
+    df = df.head(10000)  # Read only the first 10 rows for demonstration
+    rectangles = []
+    for _, row in df.iterrows():
+        center = eval(row["center"])  # Convert string to list
+        division = eval(row["division"])  # Convert string to list
+        size = [2*0.5 * (3 ** -d) for d in division]  # Calculate size based on division
+        value = row["value"]
+        iter = row["iteration"]
+        rectangles.append({"iter":iter,"center": center, "size": size, "value": value})
+
+    # print(rectangles)
+
+
+    
+
     cur_iter = 0
 
-    df_data = read_debug_data(".\\debugdata\\rects.txt")
     while (cur_iter < 10):
-        cur_iter+=1
-        df = df_data[df_data["iteration"]<=cur_iter]  # Limit to first 10 rows for demonstration
-
-        print(len(df))
-
+        cur_iter += 1
 
         fig, ax = plt.subplots(figsize=(8, 8))
         ax.set_xlim(0, 1)
@@ -80,25 +92,14 @@ if __name__ == "__main__":
         # Create a contour plot
         contour = ax.tricontourf(x, y, z, levels=20, cmap="viridis")
         plt.colorbar(contour, ax=ax, label="Value")
-        # plt.show()  # Show the plot only once
 
 
+        # Filter rectangles based on cur_iter
+        filtered_rectangles = [rect for rect in rectangles if rect["iter"] < cur_iter]
 
-        rectangles = []
-        for _, row in df.iterrows():
-            center = eval(row["center"])  # Convert string to list
-            division = eval(row["division"])  # Convert string to list
-            size = [2*0.5 * (3 ** -d) for d in division]  # Calculate size based on division
-            value = row["value"]
-            rectangles.append({"center": center, "size": size, "value": value})
-
-        for rect in rectangles:
+        for rect in filtered_rectangles:
             draw_rectangle(ax, rect["center"], rect["size"], rect["value"])
 
         plt.grid(False)  # Disable grid
-
-
-
-
         plt.show()  # Show the plot only once
 
