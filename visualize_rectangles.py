@@ -66,40 +66,44 @@ if __name__ == "__main__":
     # print(rectangles)
 
 
-    
+    # Create the figure and axis outside the loop
+    fig, ax = plt.subplots(figsize=(8, 8))
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.set_title("Rectangle Visualization Demo")
+    ax.set_xlabel("X-axis")
+    ax.set_ylabel("Y-axis")
+    ax.set_aspect('equal', adjustable='box')  # Set equal aspect ratio for x and y axes
+
+    # Extract centers and values for contour plot
+    centers = [eval(row["center"]) for _, row in df.iterrows()]
+    values = [row["value"] for _, row in df.iterrows()]
+
+    # Convert centers and values to grid format
+    x = [c[0] for c in centers]
+    y = [c[1] for c in centers]
+    z = values
+
+    # Create a contour plot (only once)
+    contour = ax.tricontourf(x, y, z, levels=20, cmap="viridis")
+    plt.colorbar(contour, ax=ax, label="Value")
 
     cur_iter = 0
 
-    while (cur_iter < 10):
+    while cur_iter < 10:
         cur_iter += 1
 
-        fig, ax = plt.subplots(figsize=(8, 8))
-        ax.set_xlim(0, 1)
-        ax.set_ylim(0, 1)
-        ax.set_title("Rectangle Visualization Demo")
-        ax.set_xlabel("X-axis")
-        ax.set_ylabel("Y-axis")
-        ax.set_aspect('equal', adjustable='box')  # Set equal aspect ratio for x and y axes
-        # Extract centers and values for contour plot
-        centers = [eval(row["center"]) for _, row in df.iterrows()]
-        values = [row["value"] for _, row in df.iterrows()]
-
-        # Convert centers and values to grid format
-        x = [c[0] for c in centers]
-        y = [c[1] for c in centers]
-        z = values
-
-        # Create a contour plot
-        contour = ax.tricontourf(x, y, z, levels=20, cmap="viridis")
-        plt.colorbar(contour, ax=ax, label="Value")
-
+        # Clear only the rectangles from the previous iteration
+        for patch in ax.patches:
+            patch.remove()
 
         # Filter rectangles based on cur_iter
-        filtered_rectangles = [rect for rect in rectangles if rect["iter"] < cur_iter]
+        filtered_rectangles = [rect for rect in rectangles if rect["iter"] == cur_iter]
 
         for rect in filtered_rectangles:
             draw_rectangle(ax, rect["center"], rect["size"], rect["value"])
 
         plt.grid(False)  # Disable grid
-        plt.show()  # Show the plot only once
+        plt.draw()
+        plt.pause(0.1)  # Pause to allow updates
 
