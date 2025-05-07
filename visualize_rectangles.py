@@ -90,9 +90,10 @@ if __name__ == "__main__":
 
     cur_iter = 0
 
-    while cur_iter < 10:
-        cur_iter += 1
-
+    def update_plot():
+        """
+        Updates the plot based on the current iteration.
+        """
         # Clear only the rectangles from the previous iteration
         for patch in ax.patches:
             patch.remove()
@@ -105,5 +106,26 @@ if __name__ == "__main__":
 
         plt.grid(False)  # Disable grid
         plt.draw()
-        plt.pause(0.1)  # Pause to allow updates
+
+    def on_click(event):
+        """
+        Handles mouse click events to update cur_iter.
+        """
+        global cur_iter  # Declare cur_iter as global
+        if event.button == 1:  # Left mouse button
+            cur_iter += 1
+            if cur_iter > 10:  # Stop at the last iteration
+                cur_iter = 10
+        elif event.button == 3:  # Right mouse button
+            cur_iter -= 1
+            if cur_iter < 0:  # Prevent negative iterations
+                cur_iter = 0
+        update_plot()
+
+    # Connect the mouse click event to the on_click function
+    fig.canvas.mpl_connect("button_press_event", on_click)
+
+    # Initial plot
+    update_plot()
+    plt.show()
 
