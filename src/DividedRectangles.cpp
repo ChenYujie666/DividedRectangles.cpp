@@ -164,7 +164,7 @@ std::vector<DirectRectangle> get_split_intervals(std::vector<DirectRectangle> &r
             hull.pop_back();
         }
 
-        if (hull.size() >= 2)
+        while (hull.size() >= 2)
         {
             const DirectRectangle &a = hull.end()[-2];
             const DirectRectangle &b = hull.end()[-1]; // b.y is greater than a.y
@@ -172,6 +172,9 @@ std::vector<DirectRectangle> get_split_intervals(std::vector<DirectRectangle> &r
             if (is_ccw(a, b, rect))
             {
                 hull.pop_back();
+            }else
+            {
+                break;
             }
         }
 
@@ -302,6 +305,7 @@ std::vector<DirectRectangle> direct(const std::function<double(const std::vector
         }
 
 
+        rects.clear();
         rects = std::move(new_rects);
 
 
